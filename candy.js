@@ -41,11 +41,48 @@ const FLOWER_SPRITES = [
 
 
 const PLANT_TYPES = [
-  { type: "macha", img: "images/macha.png" },
-  { type: "bushy", img: "images/bushy.png" },
-  { type: "pop",   img: "images/pop.png" },
-  { type: "pop2",  img: "images/pop2.png" },
-  { type: "mush1", img: "images/mush1.png" },
+  {
+    type: "macha",
+    stages: [
+      "images/seed1.png",    
+      "images/growing seed2.png",  
+      "images/macha1.png",     
+      "images/macha.png"     
+    ]
+  },
+  {
+    type: "bushy",
+    stages: [
+      "images/seed2.png",
+      "images/growing seed1.png",
+      "images/bushy.png",
+      "images/bushy.png"
+
+    ]
+  },
+  {
+    type: "pop",
+    stages: [
+
+      "images/pop1.png",
+      "images/pop2.png",
+      "images/pop3.png",
+      "images/candz.png"
+    ]
+  },
+
+   {
+    type: "mush",
+    stages: [
+
+      "images/mush1.png",
+      "images/mush2.png",
+      "images/mush2.png",
+      "images/mush2.png"
+  
+    ]
+  },
+  
 ];
 
 
@@ -59,7 +96,7 @@ let gardenState = {
 function loadGarden() {
   let loaded = false;
 
-  // 1) 먼저 쿠키에서 시도
+ 
   if (checkCookie(COOKIE_NAME)) {
     try {
       const raw = getCookie(COOKIE_NAME);
@@ -71,7 +108,7 @@ function loadGarden() {
     }
   }
 
-  // 2) 쿠키에서 못 불러왔으면 localStorage 시도
+  
   if (!loaded) {
     try {
       const rawLS = localStorage.getItem(COOKIE_NAME);
@@ -85,7 +122,7 @@ function loadGarden() {
     }
   }
 
-  // 3) 그래도 못 불러왔으면 기본값
+
   if (!loaded) {
     gardenState = {
       lastVisit: Date.now(),
@@ -149,8 +186,14 @@ function waterPlant(id) {
   const plant = gardenState.plants.find((p) => p.id === id);
   if (!plant) return;
 
+
   plant.growth += 15;
   if (plant.growth > 100) plant.growth = 100;
+
+  if (plant.clicks == null) plant.clicks = 0;
+  if (plant.clicks < 3) {
+    plant.clicks += 1;
+  }
 
   const el = document.querySelector(`.plant[data-id="${id}"]`);
   if (el) {
@@ -162,7 +205,6 @@ function waterPlant(id) {
   renderPlants();
   saveGarden();
 }
-
 
 
 function plantNewAt(xPercent, yPercent) {
@@ -177,11 +219,11 @@ function plantNewAt(xPercent, yPercent) {
 
   gardenState.plants.push({
     id,
-    type: randomType.type,
-    img: randomType.img,
+    type: randomType.type, 
     x: xPercent,
     y: yPercent,
-    growth: 40,
+    growth: 40, 
+    clicks:0,          
   });
 
   renderPlants();
@@ -219,13 +261,20 @@ function sprayFlowersAt(layer, xPx, yPx) {
 }
 
 
-
 function renderPlants() {
   const layer = document.getElementById("plantsLayer");
   layer.innerHTML = "";
 
   gardenState.plants.forEach((p) => {
     const { level, dead } = getLevelAndDead(p.growth);
+
+    const typeDef = PLANT_TYPES.find((t) => t.type === p.type);
+    if (!typeDef) return;
+
+    const stages = typeDef.stages || [];
+
+    const stageIndex = Math.min(level, stages.length - 1);
+    const sprite = stages[stageIndex];
 
     const plant = document.createElement("div");
     plant.className = `plant level-${level}` + (dead ? " dead" : "");
@@ -234,7 +283,7 @@ function renderPlants() {
     plant.style.top  = p.y + "%";
 
     const img = document.createElement("img");
-    img.src = p.img;
+    img.src = sprite;
     img.alt = p.type;
 
     plant.appendChild(img);
