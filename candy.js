@@ -45,7 +45,7 @@ const PLANT_TYPES = [
     type: "macha",
     stages: [
       "images/seed1.png",    
-      "images/growing seed2.png",  
+      "images/seed2.png",  
       "images/macha1.png",     
       "images/macha.png"     
     ]
